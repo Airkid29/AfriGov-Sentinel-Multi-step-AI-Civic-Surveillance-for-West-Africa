@@ -1,4 +1,4 @@
-# AfriGov Sentinel 🛡️
+# AfriGov Sentinel
 
 **AI-powered civic incident surveillance system for West Africa**
 Built for the [Elasticsearch Agent Builder Hackathon 2026](https://devpost.com/software/afrigov-sentinel)
