@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AfriGov Sentinel — Surveillance Citoyenne Togo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --bg:#060d06; --bg2:#0b130b; --panel:#101810; --panel2:#141f14;
+  --border:#1a2a1a; --border2:#223022;
+  --green:#2ecc71; --green2:#27ae60; --green-glow:rgba(46,204,113,0.15);
+  --orange:#e67e22; --red:#e74c3c; --yellow:#f1c40f; --blue:#3498db;
+  --text:#c8e6c8; --text2:#8aab8a; --text3:#4a6a4a;
+  --mono:'IBM Plex Mono',monospace; --display:'Syne',sans-serif; --body:'Inter',sans-serif;
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;overflow-x:hidden;}
+
+/* SCANLINES */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:9999;}
+
+/* ═══════════════════════════════════
+   LANDING PAGE
+═══════════════════════════════════ */
+#landing {
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:2rem;
+  position:relative;
+  overflow:hidden;
+}
+
+.landing-bg {
+  position:absolute;inset:0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(46,204,113,0.06) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 40% at 80% 80%, rgba(46,204,113,0.04) 0%, transparent 60%);
+}
+
+.landing-grid {
+  position:absolute;inset:0;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity:0.3;
+}
+
+.landing-content {
+  position:relative;z-index:1;
+  text-align:center;
+  max-width:680px;
+}
+
+.landing-badge {
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;
+  color:var(--green);text-transform:uppercase;
+  border:1px solid rgba(46,204,113,0.25);border-radius:20px;
+  padding:.35rem .9rem;margin-bottom:2rem;
+  background:rgba(46,204,113,0.06);
+}
+.landing-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+
+.landing-logo {
+  font-family:var(--display);font-size:clamp(2.8rem,7vw,5rem);
+  font-weight:800;line-height:1;letter-spacing:-.02em;
+  color:#fff;margin-bottom:.75rem;
+}
+.landing-logo span{color:var(--green);}
+
+.landing-sub {
+  font-size:1.05rem;color:var(--text2);line-height:1.7;
+  font-weight:300;margin-bottom:.5rem;
+}
+
+.landing-tagline {
+  font-family:var(--mono);font-size:.7rem;color:var(--text3);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:3rem;
+}
+
+.role-cards {
+  display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;
+  margin-bottom:2rem;
+}
+
+.role-card {
+  background:var(--panel);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  padding:2rem 1.5rem;
+  cursor:pointer;
+  transition:all .25s;
+  position:relative;
+  overflow:hidden;
+  text-align:left;
+}
+.role-card::before {
+  content:'';position:absolute;inset:0;
+  opacity:0;transition:opacity .25s;
+}
+.role-card.citizen::before{background:radial-gradient(ellipse at top left, rgba(46,204,113,0.08), transparent 60%);}
+.role-card.authority::before{background:radial-gradient(ellipse at top left, rgba(52,152,219,0.08), transparent 60%);}
+.role-card:hover{border-color:var(--border2);transform:translateY(-3px);}
+.role-card.citizen:hover{border-color:rgba(46,204,113,0.4);box-shadow:0 8px 32px rgba(46,204,113,0.1);}
+.role-card.authority:hover{border-color:rgba(52,152,219,0.4);box-shadow:0 8px 32px rgba(52,152,219,0.1);}
+.role-card:hover::before{opacity:1;}
+
+.role-icon {
+  font-size:2.2rem;margin-bottom:1rem;display:block;
+}
+.role-title {
+  font-family:var(--display);font-size:1.2rem;font-weight:700;
+  color:#fff;margin-bottom:.4rem;
+}
+.role-desc {
+  font-size:.82rem;color:var(--text2);line-height:1.6;font-weight:300;
+  margin-bottom:1.25rem;
+}
+.role-btn {
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.05em;
+  padding:.5rem 1rem;border-radius:6px;border:1px solid;
+  transition:all .15s;cursor:pointer;background:transparent;
+}
+.role-card.citizen .role-btn{color:var(--green);border-color:rgba(46,204,113,0.3);}
+.role-card.citizen:hover .role-btn{background:rgba(46,204,113,0.1);}
+.role-card.authority .role-btn{color:var(--blue);border-color:rgba(52,152,219,0.3);}
+.role-card.authority:hover .role-btn{background:rgba(52,152,219,0.1);}
+
+.emergency-strip {
+  background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);
+  border-radius:8px;padding:.85rem 1.25rem;
+  display:flex;align-items:center;justify-content:center;gap:2rem;
+  flex-wrap:wrap;
+}
+.emergency-strip span {
+  font-family:var(--mono);font-size:.72rem;color:var(--text2);
+}
+.emergency-strip strong{color:var(--red);}
+
+
+/* ═══════════════════════════════════
+   SHARED HEADER
+═══════════════════════════════════ */
+#app{display:none;flex-direction:column;min-height:100vh;}
+header {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.85rem 2rem;border-bottom:1px solid var(--border);
+  background:rgba(6,13,6,0.95);backdrop-filter:blur(10px);
+  position:sticky;top:0;z-index:200;
+}
+.logo{display:flex;align-items:center;gap:.75rem;cursor:pointer;}
+.logo-mark{
+  width:32px;height:32px;background:var(--green);border-radius:6px;
+  display:grid;place-items:center;font-family:var(--mono);font-size:.65rem;
+  font-weight:500;color:#060d06;letter-spacing:-.5px;
+}
+.logo-name{font-family:var(--display);font-weight:800;font-size:.95rem;color:var(--green);}
+.logo-role{font-family:var(--mono);font-size:.58rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+
+.header-right{display:flex;align-items:center;gap:1rem;}
+.status-indicator{display:flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.65rem;color:var(--text3);}
+.status-dot-anim{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+.logout-btn{
+  font-family:var(--mono);font-size:.65rem;color:var(--text3);
+  background:transparent;border:1px solid var(--border2);border-radius:4px;
+  padding:.3rem .7rem;cursor:pointer;transition:all .15s;letter-spacing:.05em;
+}
+.logout-btn:hover{color:var(--text);border-color:var(--text3);}
+
+
+/* ═══════════════════════════════════
+   CITIZEN VIEW
+═══════════════════════════════════ */
+#citizen-view {
+  flex:1;max-width:1100px;margin:0 auto;padding:2rem;width:100%;
+}
+
+.citizen-hero{
+  text-align:center;padding:2.5rem 0 2rem;
+}
+.citizen-hero h1{
+  font-family:var(--display);font-size:clamp(1.8rem,4vw,3rem);
+  font-weight:800;color:#fff;line-height:1.1;margin-bottom:.75rem;
+}
+.citizen-hero h1 em{color:var(--green);font-style:normal;}
+.citizen-hero p{
+  font-size:.95rem;color:var(--text2);max-width:500px;
+  margin:0 auto;line-height:1.7;font-weight:300;
+}
+
+/* URGENCE BANNER */
+.urgence-banner{
+  background:rgba(231,76,60,0.07);border:1px solid rgba(231,76,60,0.2);
+  border-radius:var(--radius);padding:1rem 1.5rem;margin-bottom:1.75rem;
+  display:grid;grid-template-columns:auto 1fr;gap:1rem;align-items:start;
+}
+.urgence-title{
+  font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--red);margin-bottom:.6rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.urgence-numbers{display:flex;flex-wrap:wrap;gap:.5rem .85rem;}
+.urgence-item{display:flex;flex-direction:column;gap:.1rem;}
+.urgence-label{font-family:var(--mono);font-size:.58rem;color:var(--text3);text-transform:uppercase;}
+.urgence-num{font-family:var(--mono);font-size:.95rem;font-weight:500;color:var(--red);}
+.urgence-num a{color:inherit;text-decoration:none;}
+.urgence-num a:hover{text-decoration:underline;}
+.tips-col{border-left:1px solid rgba(231,76,60,0.2);padding-left:1rem;}
+.tip-title{font-family:var(--mono);font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;}
+.tips-list{display:flex;flex-direction:column;gap:.3rem;}
+.tip{font-size:.78rem;color:var(--text2);display:flex;align-items:flex-start;gap:.4rem;line-height:1.4;}
+.tip::before{content:'→';color:var(--green);font-family:var(--mono);font-size:.7rem;flex-shrink:0;margin-top:.05rem;}
+
+/* TWO-COL FORM */
+.form-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:1.5rem;align-items:start;}
+
+.form-card{background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius);padding:1.75rem;}
+.section-title{
+  font-family:var(--display);font-size:.95rem;font-weight:700;
+  color:#fff;margin-bottom:1.25rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.section-title::before{content:'//';color:var(--green);font-family:var(--mono);font-size:.8rem;}
+
+.fg{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.85rem;}
+.fg label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;}
+input,select,textarea{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:6px;
+  padding:.6rem .85rem;color:var(--text);font-family:var(--body);font-size:.88rem;
+  transition:border-color .15s;outline:none;width:100%;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--green);}
+select option{background:var(--bg2);}
+textarea{resize:vertical;min-height:95px;line-height:1.5;}
+.fg-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+
+/* SEVERITY */
+.sev-row{display:flex;gap:.35rem;}
+.sev-btn{
+  flex:1;padding:.5rem .25rem;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:5px;color:var(--text3);font-family:var(--mono);font-size:.67rem;
+  cursor:pointer;transition:all .15s;text-align:center;line-height:1.3;
+}
+.sev-btn:hover{color:var(--text2);border-color:var(--border2);}
+.sev-btn.s1.on{background:#0d2e1a;border-color:var(--green);color:var(--green);}
+.sev-btn.s2.on{background:#162a0e;border-color:#8bc34a;color:#8bc34a;}
+.sev-btn.s3.on{background:#2a2500;border-color:var(--yellow);color:var(--yellow);}
+.sev-btn.s4.on{background:#2a1500;border-color:var(--orange);color:var(--orange);}
+.sev-btn.s5.on{background:#2a0a0a;border-color:var(--red);color:var(--red);}
+
+/* MEDIA UPLOAD */
+.media-zone{
+  border:2px dashed var(--border2);border-radius:8px;
+  padding:1.25rem;text-align:center;cursor:pointer;
+  transition:all .2s;margin-top:.35rem;position:relative;
+}
+.media-zone:hover{border-color:var(--green);background:rgba(46,204,113,0.03);}
+.media-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.media-icon{font-size:1.75rem;margin-bottom:.5rem;}
+.media-text{font-family:var(--mono);font-size:.68rem;color:var(--text3);line-height:1.5;}
+.media-preview{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem;}
+.media-thumb{
+  width:60px;height:60px;border-radius:5px;object-fit:cover;
+  border:1px solid var(--border2);background:var(--bg2);
+}
+
+/* MAP PANEL */
+.map-card{background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;}
+.map-top{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.map-top-title{font-family:var(--display);font-weight:700;font-size:.88rem;color:#fff;}
+.map-top-sub{font-family:var(--mono);font-size:.6rem;color:var(--text3);}
+.locate-btn{
+  font-family:var(--mono);font-size:.65rem;color:var(--green);
+  background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.2);
+  border-radius:5px;padding:.35rem .75rem;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:.35rem;
+}
+.locate-btn:hover{background:rgba(46,204,113,0.15);}
+.search-box-wrap{padding:.75rem 1.1rem;border-bottom:1px solid var(--border);display:flex;gap:.5rem;}
+.search-box-wrap input{flex:1;font-size:.82rem;}
+.search-go{
+  font-family:var(--mono);font-size:.7rem;background:var(--green);color:#060d06;
+  border:none;border-radius:5px;padding:.5rem .9rem;cursor:pointer;font-weight:500;
+  white-space:nowrap;
+}
+#citizen-map{height:280px;}
+.map-status{
+  padding:.55rem 1.1rem;font-family:var(--mono);font-size:.65rem;
+  color:var(--text3);border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:.4rem;min-height:32px;
+}
+.map-status.selected{color:var(--green);}
+
+/* SUBMIT */
+.submit-wrap{margin-top:1.1rem;}
+.submit-main{
+  width:100%;padding:.9rem;background:var(--green);color:#060d06;
+  border:none;border-radius:8px;font-family:var(--display);font-size:1rem;
+  font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.01em;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+}
+.submit-main:hover{background:#2ecc71;transform:translateY(-1px);box-shadow:0 6px 24px rgba(46,204,113,0.25);}
+.submit-main:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
+
+/* LOADER */
+.loader-wrap{display:none;text-align:center;padding:1.5rem;margin-top:1rem;}
+.loader-wrap.on{display:block;}
+.loader-text{font-family:var(--mono);font-size:.72rem;color:var(--green);letter-spacing:.12em;margin-bottom:.75rem;}
+.loader-steps{display:flex;flex-direction:column;gap:.35rem;text-align:left;max-width:340px;margin:0 auto;}
+.loader-step{font-family:var(--mono);font-size:.65rem;color:var(--text3);display:flex;align-items:center;gap:.5rem;transition:color .3s;}
+.loader-step.active{color:var(--green);}
+.loader-step.done{color:var(--text2);}
+.step-icon{width:14px;text-align:center;}
+.bar{width:100%;height:2px;background:var(--border2);border-radius:1px;overflow:hidden;margin-top:1rem;}
+.bar-fill{height:100%;background:var(--green);width:0;transition:width 3s linear;border-radius:1px;}
+
+/* RESULT */
+.result-wrap{display:none;margin-top:1.5rem;animation:up .35s ease;}
+.result-wrap.on{display:block;}
+@keyframes up{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+.result-card{background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;}
+.result-top{
+  padding:1.25rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.result-id-label{font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-bottom:.2rem;}
+.result-decision-label{font-family:var(--display);font-size:1rem;font-weight:700;color:#fff;}
+.decision-badge{
+  font-family:var(--mono);font-size:.7rem;font-weight:500;
+  padding:.3rem .85rem;border-radius:20px;border:1px solid;
+}
+.d-CRITICAL_ESCALATION{color:var(--red);border-color:var(--red);background:rgba(231,76,60,.1);}
+.d-URGENT_ACTION{color:var(--orange);border-color:var(--orange);background:rgba(230,126,34,.1);}
+.d-STANDARD_PROCESSING{color:var(--yellow);border-color:var(--yellow);background:rgba(241,196,15,.1);}
+.d-MONITOR{color:var(--green);border-color:var(--green);background:rgba(46,204,113,.1);}
+
+.result-body{display:grid;grid-template-columns:auto 1fr;gap:0;}
+.score-col{
+  padding:1.5rem;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:120px;
+}
+.score-big{font-family:var(--display);font-size:3.5rem;font-weight:800;line-height:1;}
+.score-sub{font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-top:.25rem;}
+
+.result-main{padding:1.25rem 1.5rem;}
+.result-section{margin-bottom:1.1rem;}
+.result-section-title{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.45rem;}
+.result-section p{font-size:.88rem;line-height:1.65;color:var(--text);font-weight:300;}
+.action-list{list-style:none;display:flex;flex-direction:column;gap:.4rem;}
+.action-list li{display:flex;gap:.5rem;font-size:.85rem;line-height:1.5;}
+.action-list li::before{content:'→';color:var(--green);font-family:var(--mono);flex-shrink:0;margin-top:.1rem;}
+
+/* CONTACT RESULT */
+.contact-result{
+  border-top:1px solid var(--border);padding:1.25rem 1.5rem;
+  background:rgba(46,204,113,0.03);
+}
+.contact-result-title{
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--green);margin-bottom:.85rem;display:flex;align-items:center;gap:.4rem;
+}
+.contact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem .85rem;}
+.cf{display:flex;flex-direction:column;gap:.12rem;}
+.cf-label{font-family:var(--mono);font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.cf-value{font-size:.85rem;color:var(--text);}
+.cf-value a{color:var(--green);text-decoration:none;}
+.cf-value a:hover{text-decoration:underline;}
+.urgence-pill{
+  display:inline-flex;align-items:center;gap:.4rem;margin-top:.75rem;
+  background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);
+  border-radius:6px;padding:.4rem .85rem;
+  font-family:var(--mono);font-size:.72rem;color:var(--red);
+}
+
+.result-footer{
+  padding:.75rem 1.5rem;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:.63rem;color:var(--text3);
+  display:flex;gap:1.5rem;flex-wrap:wrap;
+}
+
+
+/* ═══════════════════════════════════
+   AUTH LOGIN
+═══════════════════════════════════ */
+#auth-login{
+  flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;
+}
+.login-card{
+  background:var(--panel);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:2.5rem;width:100%;max-width:400px;
+  text-align:center;
+}
+.login-icon{font-size:2.5rem;margin-bottom:1rem;}
+.login-title{font-family:var(--display);font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:.4rem;}
+.login-sub{font-size:.85rem;color:var(--text2);margin-bottom:1.75rem;line-height:1.6;}
+.login-fg{text-align:left;margin-bottom:1rem;}
+.login-fg label{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:.4rem;}
+.login-btn{
+  width:100%;padding:.85rem;background:var(--blue);color:#fff;
+  border:none;border-radius:8px;font-family:var(--display);font-size:.95rem;
+  font-weight:700;cursor:pointer;transition:all .2s;margin-top:.5rem;
+}
+.login-btn:hover{background:#2980b9;}
+.login-error{
+  font-family:var(--mono);font-size:.7rem;color:var(--red);
+  margin-top:.75rem;display:none;
+}
+
+
+/* ═══════════════════════════════════
+   AUTHORITY VIEW
+═══════════════════════════════════ */
+#authority-view{flex:1;max-width:1200px;margin:0 auto;padding:2rem;width:100%;}
+
+.auth-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+.auth-title{font-family:var(--display);font-size:1.6rem;font-weight:800;color:#fff;}
+.auth-title span{font-family:var(--mono);font-size:.75rem;font-weight:400;color:var(--text3);margin-left:.75rem;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;margin-bottom:1.5rem;}
+.kpi{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:1.1rem;}
+.kpi.danger{border-color:rgba(231,76,60,.25);background:rgba(231,76,60,.04);}
+.kpi-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.4rem;}
+.kpi-val{font-family:var(--display);font-size:2rem;font-weight:800;color:var(--green);line-height:1;}
+.kpi.danger .kpi-val{color:var(--red);}
+
+/* AUTH MAP */
+.auth-map-wrap{background:var(--panel);border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:1.5rem;}
+.auth-map-header{padding:.85rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.auth-map-title{font-family:var(--display);font-weight:700;font-size:.9rem;color:#fff;}
+#auth-map{height:300px;}
+.map-legend{display:flex;gap:.85rem;padding:.6rem 1.25rem;border-top:1px solid var(--border);flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:.35rem;font-family:var(--mono);font-size:.6rem;color:var(--text3);}
+.leg-dot{width:9px;height:9px;border-radius:50%;}
+
+/* ESCALATIONS */
+.esc-wrap{background:var(--panel);border:1px solid rgba(231,76,60,.2);border-radius:8px;overflow:hidden;margin-bottom:1.5rem;}
+.esc-head{padding:.85rem 1.25rem;border-bottom:1px solid rgba(231,76,60,.15);display:flex;justify-content:space-between;align-items:center;}
+.esc-head-title{font-family:var(--display);font-weight:700;font-size:.9rem;color:var(--red);}
+.esc-count{font-family:var(--mono);font-size:.65rem;background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.25);color:var(--red);padding:.2rem .55rem;border-radius:3px;}
+
+.tbl-wrap{background:var(--panel);border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:1.5rem;}
+.tbl-head{padding:.85rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.tbl-title{font-family:var(--display);font-weight:700;font-size:.9rem;color:#fff;}
+
+table{width:100%;border-collapse:collapse;}
+th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.65rem 1.1rem;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:.72rem 1.1rem;font-size:.82rem;border-bottom:1px solid rgba(26,42,26,.6);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(46,204,113,.02);}
+
+.sev-pip{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:4px;font-family:var(--mono);font-size:.7rem;}
+.p1{background:rgba(231,76,60,.15);color:var(--red);}
+.p2{background:rgba(230,126,34,.15);color:var(--orange);}
+.p3{background:rgba(241,196,15,.15);color:var(--yellow);}
+.p4{background:rgba(139,195,74,.15);color:#8bc34a;}
+.p5{background:rgba(46,204,113,.15);color:var(--green);}
+
+.st-pill{font-family:var(--mono);font-size:.6rem;padding:.18rem .5rem;border-radius:3px;border:1px solid;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
+.st-pill:hover{opacity:.65;}
+.st-ec{color:var(--orange);border-color:rgba(230,126,34,.3);background:rgba(230,126,34,.07);}
+.st-rs{color:var(--green);border-color:rgba(46,204,113,.3);background:rgba(46,204,113,.07);}
+.st-es{color:var(--red);border-color:rgba(231,76,60,.3);background:rgba(231,76,60,.07);}
+.st-at{color:var(--text3);border-color:var(--border2);}
+
+.resolve-btn{
+  font-family:var(--mono);font-size:.62rem;padding:.22rem .6rem;
+  background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);
+  color:var(--green);border-radius:4px;cursor:pointer;transition:all .15s;
+}
+.resolve-btn:hover{background:rgba(46,204,113,.18);}
+.resolve-btn:disabled{opacity:.3;cursor:not-allowed;}
+
+.rfrsh-btn{font-family:var(--mono);font-size:.65rem;background:transparent;border:1px solid var(--border2);color:var(--text3);padding:.28rem .65rem;border-radius:4px;cursor:pointer;transition:all .15s;}
+.rfrsh-btn:hover{border-color:var(--green);color:var(--green);}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.75rem;right:1.75rem;background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:.8rem 1.1rem;font-family:var(--mono);font-size:.72rem;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:1000;max-width:280px;}
+.toast.on{transform:translateY(0);opacity:1;}
+.toast.ok{border-color:rgba(46,204,113,.35);color:var(--green);}
+.toast.err{border-color:rgba(231,76,60,.35);color:var(--red);}
+
+/* ═══════════════════════════════════
+   RESPONSIVE — TABLET (max 1024px)
+═══════════════════════════════════ */
+@media(max-width:1024px){
+  .kpi-row{grid-template-columns:repeat(3,1fr);}
+  .form-layout{grid-template-columns:1fr;}
+  #citizen-map{height:260px;}
+  #auth-map{height:260px;}
+}
+
+/* ═══════════════════════════════════
+   RESPONSIVE — MOBILE (max 768px)
+═══════════════════════════════════ */
+@media(max-width:768px){
+  #landing{padding:1.5rem 1rem;}
+  .landing-logo{font-size:2.4rem;}
+  .landing-sub{font-size:.9rem;}
+  .role-cards{grid-template-columns:1fr;gap:1rem;}
+  .role-card{padding:1.5rem 1.25rem;}
+  .emergency-strip{gap:.75rem;padding:.75rem 1rem;}
+
+  header{padding:.7rem 1rem;}
+  .logo-name{font-size:.85rem;}
+  .logo-role{display:none;}
+  .status-indicator span{display:none;}
+  .logout-btn{font-size:.6rem;padding:.25rem .55rem;}
+
+  .citizen-hero{padding:1.5rem 0 1rem;}
+  .citizen-hero h1{font-size:1.6rem;}
+  .citizen-hero p{font-size:.85rem;}
+
+  .urgence-banner{grid-template-columns:1fr;gap:.75rem;padding:.85rem 1rem;}
+  .tips-col{border-left:none;border-top:1px solid rgba(231,76,60,0.2);padding-left:0;padding-top:.75rem;}
+  .urgence-numbers{gap:.4rem .65rem;}
+  .urgence-num{font-size:.85rem;}
+
+  #citizen-view{padding:1rem;}
+  .form-card{padding:1.25rem;}
+  .section-title{font-size:.88rem;}
+  .fg-2{grid-template-columns:1fr;}
+  textarea{min-height:80px;}
+
+  .sev-row{display:grid;grid-template-columns:repeat(5,1fr);gap:.25rem;}
+  .sev-btn{padding:.45rem .15rem;font-size:.6rem;}
+
+  .map-card{margin-top:1rem;}
+  .search-box-wrap{flex-direction:column;gap:.5rem;}
+  .search-go{width:100%;}
+  #citizen-map{height:220px;}
+  .map-top{flex-direction:column;align-items:flex-start;gap:.5rem;}
+  .locate-btn{align-self:stretch;justify-content:center;}
+
+  .loader-step{font-size:.6rem;}
+
+  .result-body{grid-template-columns:1fr;}
+  .score-col{border-right:none;border-bottom:1px solid var(--border);flex-direction:row;gap:1rem;align-items:center;padding:1rem 1.25rem;justify-content:flex-start;}
+  .score-big{font-size:2.8rem;}
+  .result-main{padding:1rem 1.25rem;}
+  .result-top{padding:1rem 1.25rem;flex-direction:column;align-items:flex-start;gap:.65rem;}
+  .contact-grid{grid-template-columns:1fr;}
+  .contact-result{padding:1rem 1.25rem;}
+  .result-footer{padding:.6rem 1.25rem;gap:.75rem;font-size:.6rem;}
+
+  #authority-view{padding:1rem;}
+  .auth-title{font-size:1.2rem;}
+  .kpi-row{grid-template-columns:1fr 1fr;gap:.65rem;}
+  .kpi-val{font-size:1.6rem;}
+  #auth-map{height:220px;}
+
+  .esc-wrap,.tbl-wrap{overflow-x:auto;}
+  table{min-width:580px;}
+  th,td{padding:.55rem .7rem;font-size:.74rem;}
+
+  .login-card{padding:1.75rem 1.25rem;}
+
+  .auth-header-row{flex-direction:column;align-items:flex-start;gap:.75rem;}
+}
+
+/* ═══════════════════════════════════
+   RESPONSIVE — SMALL MOBILE (max 400px)
+═══════════════════════════════════ */
+@media(max-width:400px){
+  .landing-logo{font-size:2rem;}
+  .role-card{padding:1.25rem 1rem;}
+  .citizen-hero h1{font-size:1.35rem;}
+  .kpi-row{grid-template-columns:1fr 1fr;}
+  .kpi-val{font-size:1.35rem;}
+  .sev-btn{font-size:.55rem;padding:.38rem .1rem;}
+  .score-big{font-size:2.2rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LANDING ══════════════ -->
+<div id="landing">
+  <div class="landing-bg"></div>
+  <div class="landing-grid"></div>
+  <div class="landing-content">
+    <div class="landing-badge">Togo · Surveillance Citoyenne · IA</div>
+    <div class="landing-logo">Afri<span>Gov</span><br/>Sentinel</div>
+    <p class="landing-sub">Plateforme de signalement et d'analyse des incidents gouvernementaux alimentée par l'intelligence artificielle.</p>
+    <p class="landing-tagline">Elastic Agent Builder · Elasticsearch · Multi-step AI</p>
+
+    <div class="role-cards">
+      <div class="role-card citizen" onclick="enterCitizen()">
+        <span class="role-icon">👤</span>
+        <div class="role-title">Je suis un citoyen</div>
+        <div class="role-desc">Signalez un problème de service public, localisez l'incident sur la carte et recevez une analyse IA immédiate avec les contacts du responsable.</div>
+        <button class="role-btn">Signaler un incident →</button>
+      </div>
+      <div class="role-card authority" onclick="enterAuthority()">
+        <span class="role-icon">🏛️</span>
+        <div class="role-title">Je suis une autorité</div>
+        <div class="role-desc">Accédez au tableau de bord de gestion, visualisez les escalades critiques, gérez les statuts et suivez les incidents en temps réel.</div>
+        <button class="role-btn" style="color:var(--blue);border-color:rgba(52,152,219,0.3)">Accéder au dashboard →</button>
+      </div>
+    </div>
+
+    <div class="emergency-strip">
+      <span>🚨 Urgences Togo :</span>
+      <span><strong>SAMU 15</strong> · Santé</span>
+      <span><strong>Police 117</strong></span>
+      <span><strong>Pompiers 118</strong></span>
+      <span><strong>ANPC +228 22 26 00 44</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ APP SHELL ══════════════ -->
+<div id="app">
+  <header>
+    <div class="logo" onclick="goHome()">
+      <div class="logo-mark">AGS</div>
+      <div>
+        <div class="logo-name">AfriGov Sentinel</div>
+        <div class="logo-role" id="header-role">—</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-indicator">
+        <div class="status-dot-anim" id="health-dot"></div>
+        <span id="status-text">Connexion…</span>
+      </div>
+      <button class="logout-btn" onclick="goHome()">← Accueil</button>
+    </div>
+  </header>
+
+  <!-- CITIZEN -->
+  <div id="citizen-view" style="display:none">
+    <div class="citizen-hero">
+      <h1>Signalez. <em>L'IA analyse.</em><br/>Les autorités agissent.</h1>
+      <p>Décrivez votre problème, localisez-le sur la carte et recevez en quelques secondes une analyse complète avec le contact direct du responsable.</p>
+    </div>
+
+    <!-- URGENCES + TIPS -->
+    <div class="urgence-banner">
+      <div>
+        <div class="urgence-title">🚨 Numéros d'urgence</div>
+        <div class="urgence-numbers">
+          <div class="urgence-item"><div class="urgence-label">SAMU</div><div class="urgence-num"><a href="tel:15">15</a></div></div>
+          <div class="urgence-item"><div class="urgence-label">Police</div><div class="urgence-num"><a href="tel:117">117</a></div></div>
+          <div class="urgence-item"><div class="urgence-label">Pompiers</div><div class="urgence-num"><a href="tel:118">118</a></div></div>
+          <div class="urgence-item"><div class="urgence-label">ANPC</div><div class="urgence-num"><a href="tel:+22822260044">22 26 00 44</a></div></div>
+          <div class="urgence-item"><div class="urgence-label">TdE Urgence</div><div class="urgence-num"><a href="tel:+22822215500">22 21 55 00</a></div></div>
+          <div class="urgence-item"><div class="urgence-label">CEET</div><div class="urgence-num"><a href="tel:+22822232323">22 23 23 23</a></div></div>
+        </div>
+      </div>
+      <div class="tips-col">
+        <div class="tip-title">💡 Conseils si urgence</div>
+        <div class="tips-list">
+          <div class="tip">Panne électrique hôpital → appelez CEET <strong>immédiatement</strong></div>
+          <div class="tip">Eau contaminée → ne buvez pas, contactez TdE</div>
+          <div class="tip">Inondation → contactez ANPC, évacuez les zones basses</div>
+          <div class="tip">Corruption → documentez avec photos/vidéo avant de signaler</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-layout">
+      <!-- FORM -->
+      <div>
+        <div class="form-card">
+          <div class="section-title">Nouveau signalement</div>
+
+          <div class="fg">
+            <label>Description détaillée *</label>
+            <textarea id="f-desc" placeholder="Décrivez le problème avec le maximum de détails : depuis quand, combien de personnes affectées, tentatives de contact…"></textarea>
+          </div>
+
+          <div class="fg-2">
+            <div class="fg">
+              <label>Service concerné *</label>
+              <select id="f-service">
+                <option value="">-- Choisir --</option>
+                <option>Santé</option><option>Éducation</option>
+                <option>Eau et Assainissement</option><option>Infrastructures Routières</option>
+                <option>Services Fiscaux</option><option>Douanes</option>
+                <option>Sécurité Publique</option><option>Énergie</option>
+                <option>Administration Municipale</option><option>Environnement</option>
+                <option>Urbanisme</option><option>État Civil</option>
+                <option>Commerce</option><option>Gestion des Catastrophes</option>
+                <option>Assainissement</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Catégorie *</label>
+              <select id="f-category">
+                <option value="">-- Choisir --</option>
+                <option>Infrastructure critique</option><option>Service interrompu</option>
+                <option>Qualité médiocre</option><option>Corruption</option>
+                <option>Pénurie</option><option>Urgence</option>
+                <option>Urgence sanitaire</option><option>Urgence environnementale</option>
+                <option>Lenteur administrative</option><option>Panne technique</option>
+                <option>Sécurité publique</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fg-2">
+            <div class="fg">
+              <label>Ville *</label>
+              <input type="text" id="f-ville" placeholder="ex: Lomé"/>
+            </div>
+            <div class="fg">
+              <label>Région</label>
+              <select id="f-region">
+                <option value="Maritime">Maritime</option>
+                <option value="Plateaux">Plateaux</option>
+                <option value="Centrale">Centrale</option>
+                <option value="Kara">Kara</option>
+                <option value="Savanes">Savanes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fg">
+            <label>Sévérité *</label>
+            <div class="sev-row">
+              <button class="sev-btn s1" data-v="1" onclick="setSev(1)">1<br/>Faible</button>
+              <button class="sev-btn s2" data-v="2" onclick="setSev(2)">2<br/>Mineur</button>
+              <button class="sev-btn s3" data-v="3" onclick="setSev(3)">3<br/>Modéré</button>
+              <button class="sev-btn s4" data-v="4" onclick="setSev(4)">4<br/>Grave</button>
+              <button class="sev-btn s5 on" data-v="5" onclick="setSev(5)">5<br/>Critique</button>
+            </div>
+          </div>
+
+          <div class="fg">
+            <label>Photo / Vidéo (optionnel)</label>
+            <div class="media-zone" id="media-zone">
+              <input type="file" id="media-input" accept="image/*,video/*" multiple onchange="handleMedia(event)"/>
+              <div class="media-icon">📎</div>
+              <div class="media-text">Glissez des photos ou vidéos ici<br/>ou cliquez pour sélectionner<br/><span style="color:var(--text3)">JPG, PNG, MP4 · Max 10MB chacun</span></div>
+            </div>
+            <div class="media-preview" id="media-preview"></div>
+          </div>
+
+          <div class="submit-wrap">
+            <button class="submit-main" id="submit-btn" onclick="submitIncident()">
+              <span>🔍</span> Analyser avec Elastic AI Agent
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAP -->
+      <div class="map-card">
+        <div class="map-top">
+          <div>
+            <div class="map-top-title">📍 Localiser l'incident</div>
+            <div class="map-top-sub">Recherchez une adresse ou cliquez sur la carte</div>
+          </div>
+          <button class="locate-btn" onclick="geolocate()">📡 Ma position</button>
+        </div>
+        <div class="search-box-wrap">
+          <input type="text" id="addr-search" placeholder="Rechercher une adresse, un quartier…" onkeydown="if(event.key==='Enter')searchAddress()"/>
+          <button class="search-go" onclick="searchAddress()">Rechercher</button>
+        </div>
+        <div id="citizen-map"></div>
+        <div class="map-status" id="map-status">Cliquez sur la carte ou recherchez une adresse</div>
+      </div>
+    </div>
+
+    <!-- LOADER -->
+    <div class="loader-wrap" id="loader-wrap">
+      <div class="loader-text">ELASTIC AGENT EN COURS D'ANALYSE…</div>
+      <div class="loader-steps">
+        <div class="loader-step active" id="step1"><span class="step-icon">🔍</span> Recherche d'incidents similaires (Search)</div>
+        <div class="loader-step" id="step2"><span class="step-icon">📊</span> Analyse statistique ES|QL</div>
+        <div class="loader-step" id="step3"><span class="step-icon">📞</span> Identification du contact responsable</div>
+        <div class="loader-step" id="step4"><span class="step-icon">🧠</span> Décision et plan d'action</div>
+      </div>
+      <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-wrap" id="result-wrap">
+      <div class="result-card">
+        <div class="result-top">
+          <div>
+            <div class="result-id-label">Incident enregistré</div>
+            <div class="result-decision-label" id="r-label">—</div>
+            <div style="font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-top:.15rem" id="r-id">—</div>
+          </div>
+          <div class="decision-badge" id="r-badge">—</div>
+        </div>
+        <div class="result-body">
+          <div class="score-col">
+            <div class="score-big" id="r-score">—</div>
+            <div class="score-sub">Score<br/>de risque</div>
+          </div>
+          <div class="result-main">
+            <div class="result-section">
+              <div class="result-section-title">Analyse de l'Agent IA</div>
+              <p id="r-expl"></p>
+            </div>
+            <div class="result-section">
+              <div class="result-section-title">Plan d'action recommandé</div>
+              <ul class="action-list" id="r-actions"></ul>
+            </div>
+          </div>
+        </div>
+        <div class="contact-result" id="r-contact-wrap" style="display:none">
+          <div class="contact-result-title">📞 Contact responsable identifié par l'agent</div>
+          <div class="contact-grid">
+            <div class="cf"><div class="cf-label">Responsable</div><div class="cf-value" id="c-name">—</div></div>
+            <div class="cf"><div class="cf-label">Titre</div><div class="cf-value" id="c-titre">—</div></div>
+            <div class="cf"><div class="cf-label">Téléphone direct</div><div class="cf-value"><a id="c-tel" href="#">—</a></div></div>
+            <div class="cf"><div class="cf-label">Email</div><div class="cf-value"><a id="c-email" href="#">—</a></div></div>
+          </div>
+          <div class="urgence-pill" id="c-urg" style="display:none">🚨 Numéro d'urgence : <strong id="c-urg-num"></strong></div>
+        </div>
+        <div class="result-footer">
+          <span id="r-similar">—</span>
+          <span id="r-ctx">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH LOGIN -->
+  <div id="auth-login" style="display:none">
+    <div class="login-card">
+      <div class="login-icon">🔐</div>
+      <div class="login-title">Accès Autorités</div>
+      <div class="login-sub">Interface réservée aux agents gouvernementaux et responsables de services publics.</div>
+      <div class="login-fg">
+        <label>Identifiant</label>
+        <input type="text" id="login-user" placeholder="autorité@gouv.tg" onkeydown="if(event.key==='Enter')tryLogin()"/>
+      </div>
+      <div class="login-fg">
+        <label>Mot de passe</label>
+        <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')tryLogin()"/>
+      </div>
+      <button class="login-btn" onclick="tryLogin()">Se connecter</button>
+      <div class="login-error" id="login-error">❌ Identifiants incorrects</div>
+      <div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-top:1.25rem">
+        Démo : admin@gouv.tg / SENTINEL2026
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTHORITY VIEW -->
+  <div id="authority-view" style="display:none">
+    <div class="auth-header-row">
+      <div class="auth-title">Tableau de bord<span>Interface Autorités</span></div>
+      <button class="rfrsh-btn" onclick="loadAuth()">↻ Rafraîchir</button>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi danger"><div class="kpi-label">Escalades actives</div><div class="kpi-val" id="k-esc">—</div></div>
+      <div class="kpi danger"><div class="kpi-label">Critiques non résolus</div><div class="kpi-val" id="k-crit">—</div></div>
+      <div class="kpi"><div class="kpi-label">Total incidents</div><div class="kpi-val" id="k-tot">—</div></div>
+      <div class="kpi"><div class="kpi-label">En cours</div><div class="kpi-val" id="k-enc">—</div></div>
+      <div class="kpi"><div class="kpi-label">Résolus</div><div class="kpi-val" id="k-res">—</div></div>
+    </div>
+
+    <div class="auth-map-wrap">
+      <div class="auth-map-header">
+        <div class="auth-map-title">🗺️ Carte des incidents — Togo</div>
+        <span style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">Cliquez sur un marqueur</span>
+      </div>
+      <div id="auth-map"></div>
+      <div class="map-legend">
+        <div class="leg"><div class="leg-dot" style="background:var(--red)"></div>Critique (5)</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--orange)"></div>Grave (4)</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--yellow)"></div>Modéré (3)</div>
+        <div class="leg"><div class="leg-dot" style="background:#8bc34a"></div>Mineur (2)</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--green)"></div>Faible (1)</div>
+      </div>
+    </div>
+
+    <div class="esc-wrap">
+      <div class="esc-head">
+        <div class="esc-head-title">🚨 Escalades critiques actives</div>
+        <span class="esc-count" id="esc-badge">0</span>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>Description</th><th>Service</th><th>Région</th><th>Score</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody id="esc-tbody"><tr><td colspan="7" style="text-align:center;padding:1.5rem;font-family:var(--mono);font-size:.68rem;color:var(--text3)">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-head">
+        <div class="tbl-title">Tous les incidents</div>
+        <span style="font-family:var(--mono);font-size:.62rem;color:var(--text3)">Cliquez sur le statut pour modifier</span>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>Description</th><th>Service</th><th>Ville</th><th>Sév.</th><th>Priorité</th><th>Statut</th></tr></thead>
+        <tbody id="auth-tbody"><tr><td colspan="7" style="text-align:center;padding:2rem;font-family:var(--mono);font-size:.68rem;color:var(--text3)">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8000';
+let sev = 5, selLat = null, selLon = null;
+let cMap = null, aMap = null, cMarker = null;
+let loaderTimer = null;
+
+// ══ NAVIGATION
+function enterCitizen() {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('citizen-view').style.display = 'block';
+  document.getElementById('auth-login').style.display = 'none';
+  document.getElementById('authority-view').style.display = 'none';
+  document.getElementById('header-role').textContent = 'Interface Citoyen';
+  setTimeout(initCitizenMap, 200);
+  checkHealth();
+}
+
+function enterAuthority() {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('citizen-view').style.display = 'none';
+  document.getElementById('auth-login').style.display = 'flex';
+  document.getElementById('authority-view').style.display = 'none';
+  document.getElementById('header-role').textContent = 'Interface Autorités';
+  checkHealth();
+}
+
+function goHome() {
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+// ══ AUTH LOGIN
+function tryLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if(u === 'admin@gouv.tg' && p === 'SENTINEL2026') {
+    document.getElementById('auth-login').style.display = 'none';
+    document.getElementById('authority-view').style.display = 'block';
+    setTimeout(() => { initAuthMap(); loadAuth(); }, 200);
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    setTimeout(() => document.getElementById('login-error').style.display = 'none', 2500);
+  }
+}
+
+// ══ CITIZEN MAP
+function initCitizenMap() {
+  if(cMap) return;
+  cMap = L.map('citizen-map').setView([8.0, 1.1], 7);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    {attribution:'© OpenStreetMap © Carto', maxZoom:19}).addTo(cMap);
+  cMap.on('click', e => setMapLocation(e.latlng.lat, e.latlng.lng, null));
+}
+
+function setMapLocation(lat, lon, label) {
+  selLat = parseFloat(lat.toFixed(5));
+  selLon = parseFloat(lon.toFixed(5));
+  if(cMarker) cMap.removeLayer(cMarker);
+  cMarker = L.circleMarker([lat, lon], {radius:10, color:var_green(), fillColor:var_green(), fillOpacity:.35, weight:2}).addTo(cMap);
+  const txt = label || `${selLat}°N, ${selLon}°E`;
+  document.getElementById('map-status').textContent = '✓ ' + txt;
+  document.getElementById('map-status').className = 'map-status selected';
+}
+
+function var_green(){ return '#2ecc71'; }
+
+async function searchAddress() {
+  const q = document.getElementById('addr-search').value.trim();
+  if(!q) return;
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+', Togo')}&format=json&limit=1`);
+    const d = await r.json();
+    if(d.length) {
+      const {lat,lon,display_name} = d[0];
+      cMap.setView([lat,lon], 14);
+      setMapLocation(lat, lon, display_name.split(',').slice(0,2).join(','));
+    } else { toast('Adresse introuvable. Essayez un autre terme.','err'); }
+  } catch(e) { toast('Erreur de recherche.','err'); }
+}
+
+function geolocate() {
+  if(!navigator.geolocation) { toast('Géolocalisation non supportée.','err'); return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const {latitude:lat, longitude:lon} = pos.coords;
+    cMap.setView([lat,lon], 15);
+    setMapLocation(lat, lon, 'Ma position actuelle');
+  }, () => toast('Permission de localisation refusée.','err'));
+}
+
+// ══ SEVERITY
+function setSev(v) {
+  sev = v;
+  document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('on'));
+  document.querySelector(`.sev-btn[data-v="${v}"]`).classList.add('on');
+}
+
+// ══ MEDIA
+function handleMedia(e) {
+  const files = Array.from(e.target.files);
+  const preview = document.getElementById('media-preview');
+  preview.innerHTML = '';
+  files.forEach(f => {
+    if(f.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.className = 'media-thumb';
+      img.src = URL.createObjectURL(f);
+      preview.appendChild(img);
+    } else {
+      const div = document.createElement('div');
+      div.className = 'media-thumb';
+      div.style.cssText = 'display:flex;align-items:center;justify-content:center;font-size:1.5rem;';
+      div.textContent = '🎥';
+      preview.appendChild(div);
+    }
+  });
+}
+
+// ══ SUBMIT
+async function submitIncident() {
+  const desc = document.getElementById('f-desc').value.trim();
+  const service = document.getElementById('f-service').value;
+  const category = document.getElementById('f-category').value;
+  const ville = document.getElementById('f-ville').value.trim();
+  const region = document.getElementById('f-region').value;
+  if(!desc||!service||!category||!ville) { toast('Remplissez tous les champs obligatoires.','err'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  document.getElementById('loader-wrap').classList.add('on');
+  document.getElementById('result-wrap').classList.remove('on');
+  document.getElementById('bar-fill').style.width = '0';
+
+  // Animate loader steps
+  animateSteps();
+
+  try {
+    const body = {description:desc, service, category, severity:sev, ville, region};
+    if(selLat) { body.lat = selLat; body.lon = selLon; }
+
+    const res = await fetch(`${API}/report-incident`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    clearLoaderAnim();
+    showResult(data);
+    toast('Incident analysé avec succès !','ok');
+  } catch(e) {
+    clearLoaderAnim();
+    toast(`Erreur: ${e.message}`,'err');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('loader-wrap').classList.remove('on');
+  }
+}
+
+function animateSteps() {
+  const steps = ['step1','step2','step3','step4'];
+  steps.forEach(s => { document.getElementById(s).className = 'loader-step'; });
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('bar-fill').style.width = '0';
+  setTimeout(() => document.getElementById('bar-fill').style.width = '90%', 50);
+  let i = 0;
+  loaderTimer = setInterval(() => {
+    if(i < steps.length) {
+      if(i > 0) document.getElementById(steps[i-1]).classList.replace('active','done');
+      document.getElementById(steps[i]).classList.add('active');
+      i++;
+    }
+  }, 1800);
+}
+
+function clearLoaderAnim() {
+  if(loaderTimer) clearInterval(loaderTimer);
+  ['step1','step2','step3','step4'].forEach(s => document.getElementById(s).classList.add('done'));
+}
+
+// ══ SHOW RESULT
+function showResult(data) {
+  const a = data.analysis;
+  document.getElementById('r-id').textContent = data.incident_id;
+  document.getElementById('r-label').textContent = a.decision_label;
+
+  const badge = document.getElementById('r-badge');
+  badge.textContent = a.decision; badge.className = `decision-badge d-${a.decision}`;
+
+  const score = document.getElementById('r-score');
+  score.textContent = a.risk_score.toFixed(1);
+  score.style.color = a.risk_score>=4?'var(--red)':a.risk_score>=3?'var(--orange)':a.risk_score>=2?'var(--yellow)':'var(--green)';
+
+  document.getElementById('r-expl').textContent = a.explanation;
+
+  const ul = document.getElementById('r-actions');
+  ul.innerHTML = '';
+  (a.action_plan||[]).forEach(ac => { const li=document.createElement('li'); li.textContent=ac; ul.appendChild(li); });
+
+  document.getElementById('r-similar').textContent = `${a.similar_incidents_found} incidents similaires trouvés`;
+  const ctx = a.context||{};
+  document.getElementById('r-ctx').textContent = ctx.region_total_incidents
+    ? `${ctx.region_total_incidents} incidents dans la région (sévérité moy. ${ctx.region_avg_severity})`:'';
+
+  const contact = a.contact||{};
+  if(contact.responsable) {
+    document.getElementById('c-name').textContent = contact.responsable;
+    document.getElementById('c-titre').textContent = contact.titre||'—';
+    const tel = document.getElementById('c-tel'); tel.textContent = contact.telephone||'—'; tel.href = `tel:${contact.telephone}`;
+    const em = document.getElementById('c-email'); em.textContent = contact.email||'—'; em.href = `mailto:${contact.email}`;
+    if(contact.urgence_tel) {
+      document.getElementById('c-urg').style.display='inline-flex';
+      document.getElementById('c-urg-num').textContent = contact.urgence_tel;
+    }
+    document.getElementById('r-contact-wrap').style.display='block';
+  }
+
+  document.getElementById('result-wrap').classList.add('on');
+  document.getElementById('result-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ══ AUTH MAP
+function initAuthMap() {
+  if(aMap) return;
+  aMap = L.map('auth-map').setView([8.0,1.1],7);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    {attribution:'© OpenStreetMap © Carto', maxZoom:19}).addTo(aMap);
+}
+
+function updateAuthMap(incidents) {
+  if(!aMap) return;
+  aMap.eachLayer(l => { if(l instanceof L.CircleMarker) aMap.removeLayer(l); });
+  const cols = {1:'#2ecc71',2:'#8bc34a',3:'#f1c40f',4:'#e67e22',5:'#e74c3c'};
+  incidents.forEach(inc => {
+    if(!inc.location) return;
+    L.circleMarker([inc.location.lat, inc.location.lon], {
+      radius: 5+inc.severity*1.8, color:cols[inc.severity]||'#2ecc71',
+      fillColor:cols[inc.severity]||'#2ecc71', fillOpacity:.5, weight:1.5
+    }).bindPopup(`<div style="font:11px monospace;color:#060d06">
+      <b>${inc.incident_id}</b><br/>${(inc.description||'').slice(0,80)}…<br/>
+      Sév: ${inc.severity}/5 · ${inc.status}
+    </div>`).addTo(aMap);
+  });
+}
+
+// ══ LOAD AUTHORITY DATA
+async function loadAuth() {
+  try {
+    const [sRes, iRes, eRes] = await Promise.all([
+      fetch(`${API}/dashboard/summary`),
+      fetch(`${API}/incidents?size=100`),
+      fetch(`${API}/escalations`),
+    ]);
+    const stats = await sRes.json();
+    const incData = await iRes.json();
+    const escData = await eRes.json();
+
+    document.getElementById('k-esc').textContent = escData.total||0;
+    document.getElementById('esc-badge').textContent = escData.total||0;
+    document.getElementById('k-crit').textContent = stats.unresolved_critical||0;
+    document.getElementById('k-tot').textContent = stats.total_incidents||0;
+
+    const incs = incData.incidents||[];
+    document.getElementById('k-enc').textContent = incs.filter(i=>i.status==='En cours').length;
+    document.getElementById('k-res').textContent = incs.filter(i=>i.status==='Résolu').length;
+
+    updateAuthMap(incs);
+
+    // Escalations
+    const eb = document.getElementById('esc-tbody');
+    const escs = escData.escalations||[];
+    eb.innerHTML = escs.length ? escs.map(e=>`<tr>
+      <td style="font-family:var(--mono);font-size:.66rem;color:var(--red)">${e.incident_id}</td>
+      <td>${(e.description||'').slice(0,48)}…</td>
+      <td style="font-size:.78rem">${e.service}</td>
+      <td style="font-size:.78rem">${e.region}</td>
+      <td style="font-family:var(--mono);color:var(--red)">${e.risk_score}</td>
+      <td style="font-family:var(--mono);font-size:.65rem;color:var(--text3)">${new Date(e.created_at).toLocaleDateString('fr-FR')}</td>
+      <td><button class="resolve-btn" onclick="resolveInc('${e.incident_id}',this)">✓ Résoudre</button></td>
+    </tr>`).join('') :
+    '<tr><td colspan="7" style="text-align:center;padding:1.5rem;font-family:var(--mono);font-size:.68rem;color:var(--text3)">✅ Aucune escalade active.</td></tr>';
+
+    // All incidents
+    const tb = document.getElementById('auth-tbody');
+    tb.innerHTML = incs.map(inc=>{
+      const sc = {'En cours':'st-ec','Résolu':'st-rs','Escaladé':'st-es','En attente':'st-at'}[inc.status]||'st-at';
+      const ns = inc.status==='Résolu'?'En cours':'Résolu';
+      return `<tr>
+        <td style="font-family:var(--mono);font-size:.66rem;color:var(--text3)">${inc.incident_id}</td>
+        <td>${(inc.description||'').slice(0,52)}…</td>
+        <td style="font-size:.78rem;color:var(--text2)">${inc.service}</td>
+        <td style="font-size:.78rem">${inc.ville}</td>
+        <td><span class="sev-pip p${inc.severity}">${inc.severity}</span></td>
+        <td style="font-family:var(--mono);font-size:.68rem">${inc.priority||'—'}</td>
+        <td><span class="st-pill ${sc}" onclick="toggleSt('${inc.incident_id}','${ns}',this)">${inc.status}</span></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { console.error(e); }
+}
+
+async function toggleSt(id, ns, el) {
+  try {
+    const r = await fetch(`${API}/incidents/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:ns})});
+    if(!r.ok) throw new Error();
+    toast(`Statut → ${ns}`,'ok');
+    loadAuth();
+  } catch { toast('Erreur mise à jour','err'); }
+}
+
+async function resolveInc(id, btn) {
+  btn.disabled = true;
+  await toggleSt(id, 'Résolu', btn);
+}
+
+// ══ HEALTH
+async function checkHealth() {
+  try {
+    const r = await fetch(`${API}/health`);
+    const d = await r.json();
+    document.getElementById('status-text').textContent = `ES ${d.elasticsearch}`;
+  } catch {
+    document.getElementById('status-text').textContent = 'Hors ligne';
+    document.getElementById('health-dot').style.background = 'var(--red)';
+  }
+}
+
+// ══ TOAST
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} on`;
+  setTimeout(() => t.classList.remove('on'), 3500);
+}
+</script>
+</body>
+</html>
