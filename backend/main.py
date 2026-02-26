@@ -5,6 +5,8 @@ from typing import Optional
 from datetime import datetime, timezone
 import uuid
 
+from report_client import generate_weekly_report
+from whatsapp_client import send_critical_alert
 from elastic_client import (
     check_connection, create_indices, index_incident,
     get_similar_incidents, log_decision, get_all_incidents,
@@ -138,6 +140,13 @@ async def report_incident(report: IncidentReport):
         except Exception as e:
             print(f"⚠️ Could not log escalation: {e}")
 
+    # WhatsApp alert for critical incidents
+    if analysis["decision"] == "CRITICAL_ESCALATION":
+        try:
+            await send_critical_alert(incident, analysis)
+        except Exception as e:
+            print(f"⚠️ WhatsApp alert failed: {e}")
+
     return {
         "incident_id": incident_id,
         "status": "Analysé",
@@ -217,6 +226,27 @@ def dashboard_summary():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/generate-report")
+async def generate_report():
+    try:
+        stats_data = get_stats()
+        inc_data = get_all_incidents(size=200)
+        esc_resp = es.search(index="escalations", body={"query": {"term": {"resolved": False}}, "size": 50})
+        escalations = [h["_source"] for h in esc_resp["hits"]["hits"]]
+        report = await generate_weekly_report(stats_data, inc_data, escalations)
+        return {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "report": report,
+            "stats": {
+                "total_incidents": stats_data.get("total_incidents", 0),
+                "active_escalations": len(escalations),
+                "avg_severity": stats_data.get("avg_severity", 0),
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 def _compute_priority(severity: int) -> str:
     return {1: "P5", 2: "P4", 3: "P3", 4: "P2", 5: "P1"}.get(severity, "P5")

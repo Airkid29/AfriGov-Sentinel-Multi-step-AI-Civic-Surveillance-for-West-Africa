@@ -1,0 +1,148 @@
+<svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" style="background:#fafafa;">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#333"/>
+    </marker>
+    <marker id="arr-dash" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#999"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace; }
+    .title { font-size: 13px; fill: #111; font-weight: bold; }
+    .sub { font-size: 9px; fill: #777; }
+    .tag { font-size: 9px; fill: #888; }
+    .step-num { font-size: 11px; fill: #fff; font-weight: bold; }
+    .step-text { font-size: 10px; fill: #222; font-weight: bold; }
+    .step-sub { font-size: 9px; fill: #666; }
+    .idx-name { font-size: 10px; fill: #111; font-weight: bold; }
+    .idx-sub { font-size: 8.5px; fill: #666; }
+  </style>
+
+  <!-- TITLE -->
+  <text x="450" y="28" text-anchor="middle" class="title" style="font-size:15px;">AfriGov Sentinel — Architecture</text>
+  <text x="450" y="44" text-anchor="middle" class="tag">Elastic Agent Builder Hackathon 2026</text>
+
+  <!-- ══ CITIZEN ══ -->
+  <rect x="28" y="75" width="132" height="105" rx="4" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <text x="94" y="95" text-anchor="middle" class="title" style="font-size:12px;">Citizen</text>
+  <line x1="42" y1="103" x2="146" y2="103" stroke="#ddd" stroke-width="1"/>
+  <text x="94" y="119" text-anchor="middle" class="sub">Incident form</text>
+  <text x="94" y="133" text-anchor="middle" class="sub">Map + GPS location</text>
+  <text x="94" y="147" text-anchor="middle" class="sub">Photo / video upload</text>
+  <text x="94" y="161" text-anchor="middle" class="sub">Severity selector 1–5</text>
+
+  <!-- ══ AUTHORITY ══ -->
+  <rect x="28" y="320" width="132" height="95" rx="4" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <text x="94" y="340" text-anchor="middle" class="title" style="font-size:12px;">Authority</text>
+  <line x1="42" y1="348" x2="146" y2="348" stroke="#ddd" stroke-width="1"/>
+  <text x="94" y="364" text-anchor="middle" class="sub">Protected login</text>
+  <text x="94" y="378" text-anchor="middle" class="sub">Live incident map</text>
+  <text x="94" y="392" text-anchor="middle" class="sub">Resolve / escalate</text>
+  <text x="94" y="406" text-anchor="middle" class="sub">KPI dashboard</text>
+
+  <!-- ══ FASTAPI ══ -->
+  <rect x="238" y="160" width="155" height="170" rx="4" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <text x="315" y="182" text-anchor="middle" class="title" style="font-size:12px;">FastAPI</text>
+  <text x="315" y="196" text-anchor="middle" class="tag">Python backend</text>
+  <line x1="252" y1="204" x2="379" y2="204" stroke="#ddd" stroke-width="1"/>
+  <text x="315" y="220" text-anchor="middle" class="sub">POST /report-incident</text>
+  <text x="315" y="234" text-anchor="middle" class="sub">GET  /incidents</text>
+  <text x="315" y="248" text-anchor="middle" class="sub">GET  /escalations</text>
+  <text x="315" y="262" text-anchor="middle" class="sub">GET  /dashboard/summary</text>
+  <text x="315" y="276" text-anchor="middle" class="sub">PATCH /incidents/:id/status</text>
+  <line x1="252" y1="288" x2="379" y2="288" stroke="#ddd" stroke-width="1"/>
+  <text x="315" y="304" text-anchor="middle" class="tag">elastic_client.py</text>
+  <text x="315" y="318" text-anchor="middle" class="tag">agent_client.py</text>
+
+  <!-- ══ AGENT BUILDER ══ -->
+  <rect x="468" y="62" width="400" height="310" rx="4" fill="#fff" stroke="#111" stroke-width="2"/>
+  <rect x="468" y="62" width="400" height="34" rx="4" fill="#111"/>
+  <text x="668" y="84" text-anchor="middle" style="font-size:12px;fill:#fff;font-family:monospace;font-weight:bold;">Elastic Agent Builder</text>
+  <text x="668" y="110" text-anchor="middle" class="tag">afrigov-sentinel · Claude 3.7 Sonnet</text>
+
+  <!-- Step 1 -->
+  <rect x="486" y="122" width="18" height="18" rx="2" fill="#222"/>
+  <text x="495" y="135" text-anchor="middle" class="step-num">1</text>
+  <text x="514" y="134" class="step-text">platform.core.search</text>
+  <text x="514" y="147" class="step-sub">→ 5 similar incidents retrieved from incidents index</text>
+
+  <!-- Step 2 -->
+  <rect x="486" y="167" width="18" height="18" rx="2" fill="#222"/>
+  <text x="495" y="180" text-anchor="middle" class="step-num">2</text>
+  <text x="514" y="179" class="step-text">platform.core.execute_esql</text>
+  <text x="514" y="192" class="step-sub">→ regional stats · avg severity · critical incident count</text>
+
+  <!-- Step 3 -->
+  <rect x="486" y="212" width="18" height="18" rx="2" fill="#222"/>
+  <text x="495" y="225" text-anchor="middle" class="step-num">3</text>
+  <text x="514" y="224" class="step-text">platform.core.search</text>
+  <text x="514" y="237" class="step-sub">→ responsible official from services_contacts index</text>
+
+  <!-- Step 4 -->
+  <rect x="486" y="257" width="18" height="18" rx="2" fill="#222"/>
+  <text x="495" y="270" text-anchor="middle" class="step-num">4</text>
+  <text x="514" y="269" class="step-text">LLM Reasoning — Claude 3.7 Sonnet</text>
+  <text x="514" y="282" class="step-sub">→ risk score · decision tier · explanation · action plan</text>
+
+  <!-- output -->
+  <rect x="488" y="302" width="375" height="56" rx="3" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/>
+  <text x="667" y="320" text-anchor="middle" class="step-text" style="font-size:9.5px;">Output: { risk_score, decision, contact, action_plan, context }</text>
+  <text x="667" y="335" text-anchor="middle" class="step-sub">🔴 CRITICAL_ESCALATION  🟠 URGENT_ACTION  🟡 STANDARD_PROCESSING  🟢 MONITOR</text>
+  <text x="667" y="350" text-anchor="middle" class="tag">→ auto-logged to agent_decisions · escalations indices</text>
+
+  <!-- ══ ELASTICSEARCH ══ -->
+  <rect x="238" y="410" width="630" height="120" rx="4" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <text x="553" y="432" text-anchor="middle" class="title" style="font-size:12px;">Elasticsearch — Elastic Cloud</text>
+  <text x="553" y="446" text-anchor="middle" class="tag">4 indices · us-central1-gcp</text>
+  <line x1="252" y1="454" x2="854" y2="454" stroke="#eee" stroke-width="1"/>
+
+  <!-- 4 index cards -->
+  <rect x="252" y="462" width="138" height="54" rx="3" fill="#f9f9f9" stroke="#ddd" stroke-width="1"/>
+  <text x="321" y="479" text-anchor="middle" class="idx-name">incidents</text>
+  <text x="321" y="493" text-anchor="middle" class="idx-sub">description · severity</text>
+  <text x="321" y="506" text-anchor="middle" class="idx-sub">geo_point · region · status</text>
+
+  <rect x="400" y="462" width="138" height="54" rx="3" fill="#f9f9f9" stroke="#ddd" stroke-width="1"/>
+  <text x="469" y="479" text-anchor="middle" class="idx-name">services_contacts</text>
+  <text x="469" y="493" text-anchor="middle" class="idx-sub">service · region · ville</text>
+  <text x="469" y="506" text-anchor="middle" class="idx-sub">responsable · tel · email</text>
+
+  <rect x="548" y="462" width="138" height="54" rx="3" fill="#f9f9f9" stroke="#ddd" stroke-width="1"/>
+  <text x="617" y="479" text-anchor="middle" class="idx-name">agent_decisions</text>
+  <text x="617" y="493" text-anchor="middle" class="idx-sub">risk_score · decision</text>
+  <text x="617" y="506" text-anchor="middle" class="idx-sub">action_plan · contact</text>
+
+  <rect x="696" y="462" width="138" height="54" rx="3" fill="#f9f9f9" stroke="#ddd" stroke-width="1"/>
+  <text x="765" y="479" text-anchor="middle" class="idx-name">escalations</text>
+  <text x="765" y="493" text-anchor="middle" class="idx-sub">incident_id · risk_score</text>
+  <text x="765" y="506" text-anchor="middle" class="idx-sub">resolved · created_at</text>
+
+  <!-- ══ ARROWS ══ -->
+  <!-- Citizen → FastAPI -->
+  <line x1="160" y1="128" x2="236" y2="210" stroke="#333" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="176" y="162" class="tag" style="font-size:8.5px;">POST incident</text>
+
+  <!-- Authority → FastAPI -->
+  <line x1="160" y1="368" x2="236" y2="330" stroke="#888" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-dash)"/>
+  <text x="168" y="358" class="tag" style="font-size:8px;">GET/PATCH</text>
+
+  <!-- FastAPI → Agent Builder -->
+  <line x1="393" y1="225" x2="466" y2="200" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="410" y="208" class="tag">/converse</text>
+
+  <!-- Agent Builder response → FastAPI -->
+  <path d="M 468 270 Q 435 270 393 265" stroke="#999" stroke-width="1" stroke-dasharray="4,3" fill="none" marker-end="url(#arr-dash)"/>
+  <text x="416" y="263" class="tag">response</text>
+
+  <!-- FastAPI → Elasticsearch -->
+  <line x1="315" y1="330" x2="315" y2="408" stroke="#888" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-dash)"/>
+  <text x="320" y="374" class="tag">index/search</text>
+
+  <!-- Agent Builder → Elasticsearch -->
+  <line x1="668" y1="372" x2="668" y2="408" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="673" y="394" class="tag">tools</text>
+
+  <!-- footer -->
+  <text x="450" y="545" text-anchor="middle" class="tag" style="fill:#ccc;">afrigov-sentinel.netlify.app · afrigov-sentinel-api.onrender.com</text>
+</svg>

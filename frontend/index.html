@@ -859,7 +859,10 @@ tr:hover td{background:rgba(46,204,113,.02);}
   <div id="authority-view" style="display:none">
     <div class="auth-header-row">
       <div class="auth-title">Tableau de bord<span>Interface Autorités</span></div>
-      <button class="rfrsh-btn" onclick="loadAuth()">↻ Rafraîchir</button>
+      <div style="display:flex;gap:.5rem;">
+        <button class="rfrsh-btn" onclick="loadAuth()">↻ Rafraîchir</button>
+        <button class="rfrsh-btn" id="report-btn" onclick="generateReport()" style="color:var(--green);border-color:rgba(46,204,113,.3);">📄 Weekly Report</button>
+      </div>
     </div>
 
     <div class="kpi-row">
@@ -1234,6 +1237,44 @@ async function checkHealth() {
     document.getElementById('status-text').textContent = 'Hors ligne';
     document.getElementById('health-dot').style.background = 'var(--red)';
   }
+}
+
+// ══ WEEKLY REPORT
+async function generateReport() {
+  const btn = document.getElementById('report-btn');
+  const card = document.getElementById('report-card');
+  const loading = document.getElementById('report-loading');
+  const reportContent = document.getElementById('report-content');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+  card.style.display = 'block';
+  loading.style.display = 'block';
+  reportContent.textContent = '';
+  card.scrollIntoView({behavior:'smooth'});
+
+  try {
+    const res = await fetch(`${API}/generate-report`);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    loading.style.display = 'none';
+    reportContent.textContent = data.report;
+    document.getElementById('report-date').textContent =
+      'Generated ' + new Date(data.generated_at).toLocaleString('fr-FR');
+    toast('Report generated successfully!', 'ok');
+  } catch(e) {
+    loading.style.display = 'none';
+    reportContent.textContent = 'Error generating report: ' + e.message;
+    toast('Report generation failed', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📄 Weekly Report';
+  }
+}
+
+function copyReport() {
+  const text = document.getElementById('report-content').textContent;
+  navigator.clipboard.writeText(text).then(() => toast('Report copied to clipboard!', 'ok'));
 }
 
 // ══ TOAST

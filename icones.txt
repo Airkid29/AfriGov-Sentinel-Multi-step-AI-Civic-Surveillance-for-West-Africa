@@ -1,0 +1,30 @@
+LOcateion icon
+<i class="fi fi-sr-location-arrow"></i>
+<i class="fi fi-bs-location-arrow"></i>
+<i class="fi fi-tr-location-crosshairs"></i>
+<i class="fi fi-rr-location-crosshairs"></i>
+
+Loupe
+<i class="fi fi-rr-search"></i>
+
+Antenne
+<i class="fi fi-tr-broadcast-tower"></i>
+<i class="fi fi-ss-broadcast-tower"></i>
+
+User
+<i class="fi fi-rr-users-alt"></i>
+
+Organisation
+
+
+Trombone
+<i class="fi fi-rs-paperclip-vertical"></i>
+
+Sirène
+<i class="fi fi-rr-light-emergency-on"></i>
+
+Ampoule
+<i class="fi fi-rs-lightbulb-on"></i>
+
+Carte
+<i class="fi fi-tr-region-pin-alt"></i>
