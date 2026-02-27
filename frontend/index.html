@@ -600,13 +600,13 @@ tr:hover td{background:rgba(46,204,113,.02);}
 
     <div class="role-cards">
       <div class="role-card citizen" onclick="enterCitizen()">
-        <span class="role-icon">👤</span>
+        <span class="role-icon"></span>
         <div class="role-title">Je suis un citoyen</div>
         <div class="role-desc">Signalez un problème de service public, localisez l'incident sur la carte et recevez une analyse IA immédiate avec les contacts du responsable.</div>
         <button class="role-btn">Signaler un incident →</button>
       </div>
       <div class="role-card authority" onclick="enterAuthority()">
-        <span class="role-icon">🏛️</span>
+        <span class="role-icon"></span>
         <div class="role-title">Je suis une autorité</div>
         <div class="role-desc">Accédez au tableau de bord de gestion, visualisez les escalades critiques, gérez les statuts et suivez les incidents en temps réel.</div>
         <button class="role-btn" style="color:var(--blue);border-color:rgba(52,152,219,0.3)">Accéder au dashboard →</button>
@@ -614,7 +614,7 @@ tr:hover td{background:rgba(46,204,113,.02);}
     </div>
 
     <div class="emergency-strip">
-      <span>🚨 Urgences Togo :</span>
+      <span> Urgences Togo :</span>
       <span><strong>SAMU 15</strong> · Santé</span>
       <span><strong>Police 117</strong></span>
       <span><strong>Pompiers 118</strong></span>
@@ -652,7 +652,7 @@ tr:hover td{background:rgba(46,204,113,.02);}
     <!-- URGENCES + TIPS -->
     <div class="urgence-banner">
       <div>
-        <div class="urgence-title">🚨 Numéros d'urgence</div>
+        <div class="urgence-title"> Numéros d'urgence</div>
         <div class="urgence-numbers">
           <div class="urgence-item"><div class="urgence-label">SAMU</div><div class="urgence-num"><a href="tel:15">15</a></div></div>
           <div class="urgence-item"><div class="urgence-label">Police</div><div class="urgence-num"><a href="tel:117">117</a></div></div>
@@ -663,7 +663,7 @@ tr:hover td{background:rgba(46,204,113,.02);}
         </div>
       </div>
       <div class="tips-col">
-        <div class="tip-title">💡 Conseils si urgence</div>
+        <div class="tip-title"> Conseils si urgence</div>
         <div class="tips-list">
           <div class="tip">Panne électrique hôpital → appelez CEET <strong>immédiatement</strong></div>
           <div class="tip">Eau contaminée → ne buvez pas, contactez TdE</div>
@@ -745,7 +745,7 @@ tr:hover td{background:rgba(46,204,113,.02);}
             <label>Photo / Vidéo (optionnel)</label>
             <div class="media-zone" id="media-zone">
               <input type="file" id="media-input" accept="image/*,video/*" multiple onchange="handleMedia(event)"/>
-              <div class="media-icon">📎</div>
+              <div class="media-icon"></div>
               <div class="media-text">Glissez des photos ou vidéos ici<br/>ou cliquez pour sélectionner<br/><span style="color:var(--text3)">JPG, PNG, MP4 · Max 10MB chacun</span></div>
             </div>
             <div class="media-preview" id="media-preview"></div>
@@ -753,7 +753,7 @@ tr:hover td{background:rgba(46,204,113,.02);}
 
           <div class="submit-wrap">
             <button class="submit-main" id="submit-btn" onclick="submitIncident()">
-              <span>🔍</span> Analyser avec Elastic AI Agent
+              <span></span> Analyser avec Elastic AI Agent
             </button>
           </div>
         </div>
@@ -763,10 +763,10 @@ tr:hover td{background:rgba(46,204,113,.02);}
       <div class="map-card">
         <div class="map-top">
           <div>
-            <div class="map-top-title">📍 Localiser l'incident</div>
+            <div class="map-top-title"> Localiser l'incident</div>
             <div class="map-top-sub">Recherchez une adresse ou cliquez sur la carte</div>
           </div>
-          <button class="locate-btn" onclick="geolocate()">📡 Ma position</button>
+          <button class="locate-btn" onclick="geolocate()"> Ma position</button>
         </div>
         <div class="search-box-wrap">
           <input type="text" id="addr-search" placeholder="Rechercher une adresse, un quartier…" onkeydown="if(event.key==='Enter')searchAddress()"/>
@@ -781,10 +781,10 @@ tr:hover td{background:rgba(46,204,113,.02);}
     <div class="loader-wrap" id="loader-wrap">
       <div class="loader-text">ELASTIC AGENT EN COURS D'ANALYSE…</div>
       <div class="loader-steps">
-        <div class="loader-step active" id="step1"><span class="step-icon">🔍</span> Recherche d'incidents similaires (Search)</div>
-        <div class="loader-step" id="step2"><span class="step-icon">📊</span> Analyse statistique ES|QL</div>
-        <div class="loader-step" id="step3"><span class="step-icon">📞</span> Identification du contact responsable</div>
-        <div class="loader-step" id="step4"><span class="step-icon">🧠</span> Décision et plan d'action</div>
+        <div class="loader-step active" id="step1"><span class="step-icon"></span> Recherche d'incidents similaires (Search)</div>
+        <div class="loader-step" id="step2"><span class="step-icon"></span> Analyse statistique ES|QL</div>
+        <div class="loader-step" id="step3"><span class="step-icon"></span> Identification du contact responsable</div>
+        <div class="loader-step" id="step4"><span class="step-icon"></span> Décision et plan d'action</div>
       </div>
       <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
     </div>
@@ -817,14 +817,14 @@ tr:hover td{background:rgba(46,204,113,.02);}
           </div>
         </div>
         <div class="contact-result" id="r-contact-wrap" style="display:none">
-          <div class="contact-result-title">📞 Contact responsable identifié par l'agent</div>
+          <div class="contact-result-title"> Contact responsable identifié par l'agent</div>
           <div class="contact-grid">
             <div class="cf"><div class="cf-label">Responsable</div><div class="cf-value" id="c-name">—</div></div>
             <div class="cf"><div class="cf-label">Titre</div><div class="cf-value" id="c-titre">—</div></div>
             <div class="cf"><div class="cf-label">Téléphone direct</div><div class="cf-value"><a id="c-tel" href="#">—</a></div></div>
             <div class="cf"><div class="cf-label">Email</div><div class="cf-value"><a id="c-email" href="#">—</a></div></div>
           </div>
-          <div class="urgence-pill" id="c-urg" style="display:none">🚨 Numéro d'urgence : <strong id="c-urg-num"></strong></div>
+          <div class="urgence-pill" id="c-urg" style="display:none"> Numéro d'urgence : <strong id="c-urg-num"></strong></div>
         </div>
         <div class="result-footer">
           <span id="r-similar">—</span>
@@ -837,7 +837,7 @@ tr:hover td{background:rgba(46,204,113,.02);}
   <!-- AUTH LOGIN -->
   <div id="auth-login" style="display:none">
     <div class="login-card">
-      <div class="login-icon">🔐</div>
+      <div class="login-icon"></div>
       <div class="login-title">Accès Autorités</div>
       <div class="login-sub">Interface réservée aux agents gouvernementaux et responsables de services publics.</div>
       <div class="login-fg">
@@ -849,7 +849,7 @@ tr:hover td{background:rgba(46,204,113,.02);}
         <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')tryLogin()"/>
       </div>
       <button class="login-btn" onclick="tryLogin()">Se connecter</button>
-      <div class="login-error" id="login-error">❌ Identifiants incorrects</div>
+      <div class="login-error" id="login-error"> Identifiants incorrects</div>
       <div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-top:1.25rem">
         Démo : admin@gouv.tg / SENTINEL2026
       </div>
@@ -891,7 +891,7 @@ tr:hover td{background:rgba(46,204,113,.02);}
 
     <div class="esc-wrap">
       <div class="esc-head">
-        <div class="esc-head-title">🚨 Escalades critiques actives</div>
+        <div class="esc-head-title"> Escalades critiques actives</div>
         <span class="esc-count" id="esc-badge">0</span>
       </div>
       <table>
@@ -1247,29 +1247,27 @@ async function generateReport() {
   const loading = document.getElementById('report-loading');
   const reportContent = document.getElementById('report-content');
 
+  console.log('Début de la génération du rapport'); // Log ajouté
+
   btn.disabled = true;
-  btn.textContent = '⏳ Generating…';
-  card.style.display = 'block';
-  loading.style.display = 'block';
-  reportContent.textContent = '';
-  card.scrollIntoView({behavior:'smooth'});
+  if (loading) loading.style.display = 'block';
+  if (card) card.style.display = 'none';
 
   try {
     const res = await fetch(`${API}/generate-report`);
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
+
     const data = await res.json();
-    loading.style.display = 'none';
-    reportContent.textContent = data.report;
-    document.getElementById('report-date').textContent =
-      'Generated ' + new Date(data.generated_at).toLocaleString('fr-FR');
-    toast('Report generated successfully!', 'ok');
-  } catch(e) {
-    loading.style.display = 'none';
-    reportContent.textContent = 'Error generating report: ' + e.message;
-    toast('Report generation failed', 'err');
+    console.log('Rapport généré avec succès', data); // Log ajouté
+
+    if (reportContent) reportContent.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    if (card) card.style.display = 'block';
+  } catch (e) {
+    console.error('Erreur lors de la génération du rapport', e); // Log ajouté
+    toast('Erreur lors de la génération du rapport', 'err');
   } finally {
     btn.disabled = false;
-    btn.textContent = '📄 Weekly Report';
+    if (loading) loading.style.display = 'none';
   }
 }
 
