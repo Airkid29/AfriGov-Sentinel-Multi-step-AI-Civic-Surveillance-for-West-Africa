@@ -1,14 +1,14 @@
 # AfriGov Sentinel
 
 **AI-powered civic incident surveillance system for West Africa**
-Built for the [Elasticsearch Agent Builder Hackathon 2026](https://devpost.com/software/afrigov-sentinel)
+Built for the [Elasticsearch Agent Builder Hackathon 2026](https://devpost.com/software/root4)
 
 ---
 
 ## Architecture
 
 ```
-Citizen → Frontend (HTML)
+Citizen → Frontend (HTML/CSS/JS)
               ↓
          FastAPI Backend
           ↙          ↘
@@ -25,6 +25,12 @@ Citizen → Frontend (HTML)
 - **Database**: Elasticsearch (Elastic Cloud)
 - **AI Brain**: Elastic Agent Builder
 - **Frontend**: Vanilla HTML/CSS/JS
+
+## Features
+- **Incident Reporting**: Citizens can report incidents with detailed descriptions and severity levels.
+- **AI Analysis**: Elastic Agent Builder provides real-time risk assessment and action plans.
+- **Interactive Maps**: Locate incidents and visualize data on a map.
+- **Authority Dashboard**: Manage escalations and monitor incidents in real time.
 
 ## Setup
 
@@ -79,10 +85,16 @@ Open `frontend/index.html` in your browser.
 
 ## How It Works
 
-1. Citizen fills out the form and submits an incident
-2. Backend indexes it in Elasticsearch
-3. Backend searches for similar past incidents
-4. Elastic Agent Builder analyzes the incident with full context
-5. Agent returns: risk score (0-5), decision, explanation, action plan
-6. Decision is logged in `agent_decisions` index
-7. Result displayed to citizen in real time
+1. Citizen fills out the form and submits an incident.
+2. Backend indexes it in Elasticsearch.
+3. Backend searches for similar past incidents.
+4. Elastic Agent Builder analyzes the incident with full context.
+5. Agent returns: risk score (0-5), decision, explanation, action plan.
+6. Decision is logged in `agent_decisions` index.
+7. Result displayed to citizen in real time.
+
+## Recent Improvements
+- Removed emoji icons for better accessibility.
+- Enhanced CSS for improved responsiveness on mobile devices.
+- Updated authority dashboard with real-time escalation management.
+- Optimized API performance for faster response times.
