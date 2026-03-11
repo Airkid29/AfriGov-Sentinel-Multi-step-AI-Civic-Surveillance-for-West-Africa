@@ -37,7 +37,7 @@ Citizen → Frontend (HTML/CSS/JS)
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/afrigov-sentinel
+git clone https://github.com/Airkid29/afrigov-sentinel
 cd afrigov-sentinel/backend
 pip install -r requirements.txt
 ```
