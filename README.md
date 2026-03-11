@@ -7,6 +7,8 @@ Built for the [Elasticsearch Agent Builder Hackathon 2026](https://devpost.com/s
 
 ## Architecture
 
+![Architectural Diagram](<architectural diagram.png>)
+
 ```
 Citizen → Frontend (HTML/CSS/JS)
               ↓
