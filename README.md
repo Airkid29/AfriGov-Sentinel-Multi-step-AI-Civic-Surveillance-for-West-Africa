@@ -2,6 +2,8 @@
 
 **AI-powered civic incident surveillance system for West Africa**
 Built for the [Elasticsearch Agent Builder Hackathon 2026](https://devpost.com/software/root4)
+
+
 Co-authored-by: Olivier FIABI, flowoliv277@gmail.com
 
 ---
